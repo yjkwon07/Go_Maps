@@ -10,7 +10,7 @@ const googleMapsClient = googleMaps.createClient({
 });
 
 router.get('/', (_req, res) => {
-    res.render('index');
+    res.render('index', {Google_Key: process.env.PLACES_API_KEY});
 });
 
 router.get('/autocomplete/:query', (req, res, next) => {

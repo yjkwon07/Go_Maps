@@ -36,23 +36,35 @@ router.get('/autocomplete/:query', (req, res, next) => {
     });
 });
 
-router.get('/search/:query', async (req, res, next) => {
+router.get('/search/:searchQuery', async (req, res, next) => {
     const googlePlaces = util.promisify(googleMapsClient.places);
-    const { type } = req.query;
+    const googlePlacesNearby = util.promisify(googleMapsClient.placesNearby);
+    const { lat, lng, type } = req.query;
     try {
-        const history = new History({ query: req.params.query });
+        const history = new History({ query: req.params.searchQuery });
         await history.save();
-        const response = await googlePlaces({
-            query: req.params.query,
-            language: 'ko',
-            type,
-        });
+        let response;
+        if(lat && lng) {
+            response = await googlePlacesNearby({
+                keyword: req.params.searchQuery,
+                location: `${lat}, ${lng}`,
+                rankby: 'distance',
+                language: 'ko',
+                type,
+            });
+        } else {
+            response = await googlePlaces({
+                query: req.params.searchQuery,
+                language: 'ko',
+                type,
+            });
+        }
         res.render('result', {
             title: `${req.params.query}결과`,
             results: response.json.results,
             Google_Key: process.env.PLACES_API_KEY,
             isfavoriate: true,
-            query: req.params.query,
+            query: req.params.searchQuery,
         });
     } catch (error) {
         console.error(error);

@@ -63,7 +63,24 @@ function setMarker() {
       };
       div.appendChild(button);
     }
-    
+    else {
+      var button = document.createElement('button');
+      button.classList.add('btn');
+      button.textContent = '즐겨찾기 삭제';
+  
+      button.onclick = function () {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            location.href = '/';
+          }
+        };
+        xhr.open('DELETE', `/location/${position.id}/favorite`);
+        xhr.send();
+      };
+      div.appendChild(button);
+    }
+
     div.appendChild(h1);
     var infowindow = new google.maps.InfoWindow({
       content: div

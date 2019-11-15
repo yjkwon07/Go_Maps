@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= query + ' 검색 결과(' + results.length + ')'
+  #map  
+  script(src="/script/maps.js") 
+  for result in results
+    script.
+      positions.push({
+        lat: #{result.geometry.location.lat},
+        lng: #{result.geometry.location.lng},
+        name: '#{result.name}',
+        id: '#{result.place_id}'
+      });
+
+  script(async defer src="https://maps.googleapis.com/maps/api/js?key=" + Google_Key + "&callback=initMap")

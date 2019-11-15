@@ -1,0 +1,36 @@
+doctype
+
+html
+
+  head
+    title= title || '장소 검색 서비스'
+    link(rel="stylesheet" href='/css/main.css')
+
+  body
+    form#search-form(method='GET')
+      span 장소 검색 서비스
+      input#search
+      select#type
+        option(value='') 없음
+        option(value='cafe') 카페
+        option(value='store') 상점
+        option(value='bank') 은행
+        option(value='school') 학교
+      button#search-btn.btn(type='submit') 검색
+      button#loc-search-btn.btn 주변검색
+      ul#search-list
+    -const checkHistories =[];
+    for history in histories
+      if(checkHistories.indexOf(history.query) === -1) 
+        -checkHistories.push(history.query)
+        button.history-btn= history.query
+    block content
+    
+    script(src="/script/query.js")
+    script. 
+      isfavoriate = #{isfavoriate}
+      Array.prototype.forEach.call(document.querySelectorAll('.history-btn'), function(event){
+        event.addEventListener('click', function(event) {
+          location.href=`/search/${event.target.textContent}`;
+        })
+      });

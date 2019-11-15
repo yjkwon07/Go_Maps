@@ -4,19 +4,20 @@ const flash = require('connect-flash');
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 const path = require('path');
-
 require('dotenv').config();
+
 const indexRouter = require('./routes');
 const connect = require('./schemas');
 
 const app = express();
 connect();
 
-app.set('views', path.join(__dirname, 'viewws'));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.set('port', process.env.PORT || 8015);
+
 app.use(morgan('dev'));
-app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -33,7 +34,7 @@ app.use(flash());
 
 app.use('/', indexRouter);
 
-app.use((req, res, next) => {
+app.use((_req, _res, next) => {
     const err = new Error('Not Found');
     err.status = 404;
     next(err);
@@ -49,5 +50,3 @@ app.use((err, req, res) => {
 app.listen(app.get('port'), () => {
     console.log(app.get('port'), '번 포트에서 대기 중');
 });
-
-

@@ -1,0 +1,15 @@
+extends layout
+
+block content
+    h1 즐겨찾기
+    #map
+    script(src="/script/maps.js")
+    for result in results
+        script.
+            positions.push({
+                lat: #{result.location[1]},
+                lng: #{result.location[0]},
+                name: '#{result.name}',
+                id: '#{result.placeId}'
+            });
+    script(async defer src="https://maps.googleapis.com/maps/api/js"+ "?key="+Google_Key+"&callback=initMap")

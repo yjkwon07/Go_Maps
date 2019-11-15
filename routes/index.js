@@ -11,14 +11,16 @@ const googleMapsClient = googleMaps.createClient({
 });
 
 router.get('/', async (_req, res) => {
-    try{
+    try {
         const favorites = await Favorite.find({});
+        const histories = await History.find({}).limit(10).sort("-createdAt");
         res.render('index', {
             isfavoriate: false,
-            results : favorites,
-            Google_Key: process.env.PLACES_API_KEY 
+            results: favorites,
+            histories: histories,
+            Google_Key: process.env.PLACES_API_KEY
         })
-    }catch(error){
+    } catch (error) {
         console.error(error);
         next(error);
     }
@@ -32,19 +34,23 @@ router.get('/autocomplete/:query', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        return res.status(200).json(response.json.predictions);
+        return res.status(200).json({ 
+            predictions: response.json.predictions,
+            message: "SEARCH DONE"
+        });
     });
 });
 
 router.get('/search/:searchQuery', async (req, res, next) => {
     const googlePlaces = util.promisify(googleMapsClient.places);
     const googlePlacesNearby = util.promisify(googleMapsClient.placesNearby);
+    const histories = await History.find({}).limit(10).sort("-createdAt");
     const { lat, lng, type } = req.query;
     try {
         const history = new History({ query: req.params.searchQuery });
         await history.save();
         let response;
-        if(lat && lng) {
+        if (lat && lng) {
             response = await googlePlacesNearby({
                 keyword: req.params.searchQuery,
                 location: `${lat}, ${lng}`,
@@ -60,8 +66,9 @@ router.get('/search/:searchQuery', async (req, res, next) => {
             });
         }
         res.render('result', {
-            title: `${req.params.query}결과`,
+            title: `${req.params.searchQuery}결과`,
             results: response.json.results,
+            histories: histories,
             Google_Key: process.env.PLACES_API_KEY,
             isfavoriate: true,
             query: req.params.searchQuery,
@@ -73,24 +80,30 @@ router.get('/search/:searchQuery', async (req, res, next) => {
 });
 
 router.post('/location/:id/favorite', async (req, res, next) => {
-    try{
+    try {
         const favoriate = new Favorite({
             placeId: req.params.id,
             name: req.body.name,
             location: [req.body.lng, req.body.lat],
         });
         await favoriate.save();
-        res.status(200).send(favoriate);
-    }catch(error) {
+        res.status(200).json({ 
+            favoriate,
+            message: "CREATE DONE",
+        });
+    } catch (error) {
         console.error(error);
         next(error);
     }
 });
 
-router.delete('/location/:id/favorite', async(req, res, next) => {
+router.delete('/location/:id/favorite', async (req, res, next) => {
     try {
-        await Favorite.remove({placeId: req.params.id});
-        res.status(200).send("DELETE DONE");
+        const favoriate = await Favorite.remove({ placeId: req.params.id });
+        res.status(200).json({
+            favoriate,
+            message: "DELETE DONE",
+        });
     } catch (error) {
         console.err(error);
         next(error);

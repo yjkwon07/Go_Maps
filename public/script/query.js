@@ -4,7 +4,8 @@ document.querySelector('#search').addEventListener('keyup', function (_event) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.status === 200) {
-            var predictions = JSON.parse(xhr.responseText);
+            if (!xhr.responseText) return;
+            var { predictions } = JSON.parse(xhr.responseText);
             var ul = document.querySelector('#search-list');
             ul.innerHTML = '';
             predictions.forEach(function (prediction) {
